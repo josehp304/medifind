@@ -1,0 +1,145 @@
+> Build a full-stack web platform called MediFind that helps users quickly locate medicines in nearby pharmacies.
+
+Main Features:
+
+1. Two Search Modes:
+
+Medicine-first Search: User enters a medicine name → show list of nearby shops that have it, including:
+
+Price (per unit)
+
+Stock availability
+
+Distance from user (use a dummy distance calculation for now)
+
+
+Shop-first Search: User selects a shop from a list → search its inventory for a medicine to check availability.
+
+
+
+2. Frontend Requirements (React + Tailwind CSS):
+
+Homepage with search mode selector (“Search by Medicine” / “Search by Shop”).
+
+Medicine-first page: Search bar for medicine name → results in card format with shop details, price, stock, and distance.
+
+Shop-first page: Dropdown list of shops → search bar for medicines in that shop → results in table or cards.
+
+Responsive design for mobile and desktop.
+
+Simple navigation header + footer.
+
+
+
+3. Backend Requirements (Node.js + Express):
+
+API endpoints:
+
+GET /api/medicines/search?name= – returns shops that have the medicine with price, stock, and distance.
+
+GET /api/shops – returns all shops with name, address, and coordinates.
+
+GET /api/shops/:id/medicines – returns inventory of a specific shop.
+
+
+Use mock location and distance calculation (Haversine formula).
+
+Handle basic error responses.
+
+
+
+4. Database (Neon Serverless Postgres + Drizzle ORM):
+
+Use Drizzle ORM with the pg driver to connect to a Neon Postgres instance via connection string from .env.
+
+Tables:
+
+shops → id (serial), name (text), address (text), latitude (float8), longitude (float8)
+
+medicines → id (serial), name (text), description (text)
+
+inventory → id (serial), shop_id (int), medicine_id (int), price (numeric), stock_quantity (int)
+
+
+Seed database with at least 5 shops and 10 medicines, each shop having different availability.
+
+Include drizzle-kit migration scripts so schema can be updated easily.
+
+
+
+5. Extra Functionalities:
+
+Allow search to be case-insensitive.
+
+Show “Out of Stock” if quantity is zero.
+
+Show “Nearest Shop” badge if it’s the closest one in results.
+
+Add simple loader animation while fetching data.
+
+
+
+6. Folder Structure:
+
+/frontend  → React + Tailwind app  
+/backend   → Express.js API server (Drizzle ORM for DB)  
+/drizzle   → Drizzle schema and migrations
+
+
+7. Environment Variables:
+
+.env should contain:
+
+DATABASE_URL=postgresql://<username>:<password>@<neon_host>/<dbname>?sslmode=require
+
+
+
+8. Deployment:
+
+Make the project runnable in Replit with a single “Run” button that starts both frontend and backend.
+
+Provide README.md with instructions for:
+
+1. Creating a Neon Postgres database
+
+
+2. Running Drizzle migrations
+
+
+3. Seeding the database
+
+
+
+
+
+9. Tech Stack:
+
+Frontend: React + Tailwind CSS
+
+Backend: Node.js + Express
+
+Database: Neon Serverless Postgres + Drizzle ORM
+
+API format: JSON
+
+
+
+
+Make sure all features are working with seeded data. Include code comments for clarity.
+
+
+
+
+---
+
+If we run this in Replit, the AI will set up:
+
+React frontend with Tailwind styling
+
+Express backend that talks to Neon via Drizzle
+
+Drizzle schema + migrations for Postgres
+
+Mock seed data so results show immediately
+
+
