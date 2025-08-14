@@ -87,6 +87,46 @@ async function seedDatabase() {
       {
         name: "Loratadine 10mg",
         description: "Non-drowsy antihistamine"
+      },
+      {
+        name: "Ciprofloxacin 500mg",
+        description: "Antibiotic for bacterial infections"
+      },
+      {
+        name: "Doxycycline 100mg",
+        description: "Antibiotic for various infections"
+      },
+      {
+        name: "Azithromycin 250mg",
+        description: "Antibiotic for respiratory infections"
+      },
+      {
+        name: "Clopidogrel 75mg",
+        description: "Blood thinner for heart conditions"
+      },
+      {
+        name: "Amlodipine 5mg",
+        description: "Calcium channel blocker for blood pressure"
+      },
+      {
+        name: "Atorvastatin 20mg",
+        description: "Statin for cholesterol management"
+      },
+      {
+        name: "Levothyroxine 50mcg",
+        description: "Thyroid hormone replacement"
+      },
+      {
+        name: "Prednisone 10mg",
+        description: "Corticosteroid for inflammation"
+      },
+      {
+        name: "Gabapentin 300mg",
+        description: "Anticonvulsant for nerve pain"
+      },
+      {
+        name: "Tramadol 50mg",
+        description: "Pain reliever for moderate pain"
       }
     ];
 
@@ -140,6 +180,67 @@ async function seedDatabase() {
       { shopId: createdShops[4].id, medicineId: createdMedicines[5].id, price: "122.50", stockQuantity: 0 },
       { shopId: createdShops[4].id, medicineId: createdMedicines[6].id, price: "63.50", stockQuantity: 27 },
       { shopId: createdShops[4].id, medicineId: createdMedicines[9].id, price: "32.00", stockQuantity: 36 },
+
+      // Additional medicines across shops
+      // Ciprofloxacin 500mg (medicine 10)
+      { shopId: createdShops[0].id, medicineId: createdMedicines[10].id, price: "95.00", stockQuantity: 18 },
+      { shopId: createdShops[1].id, medicineId: createdMedicines[10].id, price: "92.50", stockQuantity: 22 },
+      { shopId: createdShops[2].id, medicineId: createdMedicines[10].id, price: "98.75", stockQuantity: 0 },
+      { shopId: createdShops[3].id, medicineId: createdMedicines[10].id, price: "94.00", stockQuantity: 15 },
+
+      // Doxycycline 100mg (medicine 11)
+      { shopId: createdShops[0].id, medicineId: createdMedicines[11].id, price: "78.50", stockQuantity: 12 },
+      { shopId: createdShops[2].id, medicineId: createdMedicines[11].id, price: "82.25", stockQuantity: 25 },
+      { shopId: createdShops[3].id, medicineId: createdMedicines[11].id, price: "75.00", stockQuantity: 8 },
+      { shopId: createdShops[4].id, medicineId: createdMedicines[11].id, price: "79.75", stockQuantity: 30 },
+
+      // Azithromycin 250mg (medicine 12)
+      { shopId: createdShops[0].id, medicineId: createdMedicines[12].id, price: "125.00", stockQuantity: 20 },
+      { shopId: createdShops[1].id, medicineId: createdMedicines[12].id, price: "118.50", stockQuantity: 16 },
+      { shopId: createdShops[2].id, medicineId: createdMedicines[12].id, price: "130.00", stockQuantity: 14 },
+      { shopId: createdShops[4].id, medicineId: createdMedicines[12].id, price: "122.75", stockQuantity: 0 },
+
+      // Clopidogrel 75mg (medicine 13)
+      { shopId: createdShops[1].id, medicineId: createdMedicines[13].id, price: "185.00", stockQuantity: 10 },
+      { shopId: createdShops[2].id, medicineId: createdMedicines[13].id, price: "192.50", stockQuantity: 8 },
+      { shopId: createdShops[3].id, medicineId: createdMedicines[13].id, price: "188.75", stockQuantity: 12 },
+      { shopId: createdShops[4].id, medicineId: createdMedicines[13].id, price: "190.00", stockQuantity: 15 },
+
+      // Amlodipine 5mg (medicine 14)
+      { shopId: createdShops[0].id, medicineId: createdMedicines[14].id, price: "42.50", stockQuantity: 35 },
+      { shopId: createdShops[1].id, medicineId: createdMedicines[14].id, price: "38.75", stockQuantity: 28 },
+      { shopId: createdShops[2].id, medicineId: createdMedicines[14].id, price: "45.00", stockQuantity: 0 },
+      { shopId: createdShops[3].id, medicineId: createdMedicines[14].id, price: "41.25", stockQuantity: 22 },
+
+      // Atorvastatin 20mg (medicine 15)
+      { shopId: createdShops[0].id, medicineId: createdMedicines[15].id, price: "165.00", stockQuantity: 18 },
+      { shopId: createdShops[2].id, medicineId: createdMedicines[15].id, price: "172.50", stockQuantity: 12 },
+      { shopId: createdShops[3].id, medicineId: createdMedicines[15].id, price: "168.75", stockQuantity: 20 },
+      { shopId: createdShops[4].id, medicineId: createdMedicines[15].id, price: "170.00", stockQuantity: 25 },
+
+      // Levothyroxine 50mcg (medicine 16)
+      { shopId: createdShops[0].id, medicineId: createdMedicines[16].id, price: "58.50", stockQuantity: 0 },
+      { shopId: createdShops[1].id, medicineId: createdMedicines[16].id, price: "55.25", stockQuantity: 32 },
+      { shopId: createdShops[2].id, medicineId: createdMedicines[16].id, price: "62.00", stockQuantity: 15 },
+      { shopId: createdShops[4].id, medicineId: createdMedicines[16].id, price: "59.75", stockQuantity: 28 },
+
+      // Prednisone 10mg (medicine 17)
+      { shopId: createdShops[1].id, medicineId: createdMedicines[17].id, price: "72.50", stockQuantity: 14 },
+      { shopId: createdShops[2].id, medicineId: createdMedicines[17].id, price: "75.00", stockQuantity: 18 },
+      { shopId: createdShops[3].id, medicineId: createdMedicines[17].id, price: "68.75", stockQuantity: 0 },
+      { shopId: createdShops[4].id, medicineId: createdMedicines[17].id, price: "71.25", stockQuantity: 22 },
+
+      // Gabapentin 300mg (medicine 18)
+      { shopId: createdShops[0].id, medicineId: createdMedicines[18].id, price: "145.50", stockQuantity: 12 },
+      { shopId: createdShops[1].id, medicineId: createdMedicines[18].id, price: "138.75", stockQuantity: 8 },
+      { shopId: createdShops[3].id, medicineId: createdMedicines[18].id, price: "142.00", stockQuantity: 16 },
+      { shopId: createdShops[4].id, medicineId: createdMedicines[18].id, price: "140.25", stockQuantity: 20 },
+
+      // Tramadol 50mg (medicine 19)
+      { shopId: createdShops[0].id, medicineId: createdMedicines[19].id, price: "85.00", stockQuantity: 25 },
+      { shopId: createdShops[2].id, medicineId: createdMedicines[19].id, price: "88.50", stockQuantity: 0 },
+      { shopId: createdShops[3].id, medicineId: createdMedicines[19].id, price: "82.75", stockQuantity: 18 },
+      { shopId: createdShops[4].id, medicineId: createdMedicines[19].id, price: "86.25", stockQuantity: 30 },
     ];
 
     for (const item of inventoryData) {
