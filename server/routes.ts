@@ -73,6 +73,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get all medicines endpoint for suggestions
+  app.get("/api/medicines", async (req, res) => {
+    try {
+      const allMedicines = await storage.getAllMedicines();
+      res.json(allMedicines);
+    } catch (error) {
+      console.error("Error fetching medicines:", error);
+      res.status(500).json({ 
+        message: "Failed to fetch medicines",
+        error: "FETCH_MEDICINES_FAILED"
+      });
+    }
+  });
+
   // Get shop inventory endpoint
   app.get("/api/shops/:id/medicines", async (req, res) => {
     try {
