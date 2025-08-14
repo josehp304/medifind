@@ -1,4 +1,4 @@
-import { MapPin, Navigation } from "lucide-react";
+import { MapPin, Navigation, Calendar } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 
@@ -22,10 +22,31 @@ interface MedicineResultCardProps {
     inStock: boolean;
     isNearest?: boolean;
   };
+  onReserve?: (reservationData: {
+    shopId: number;
+    medicineId: number;
+    medicineName: string;
+    shopName: string;
+    price: string;
+    availableStock: number;
+  }) => void;
 }
 
-export default function MedicineResultCard({ result }: MedicineResultCardProps) {
+export default function MedicineResultCard({ result, onReserve }: MedicineResultCardProps) {
   const { shop, medicine, price, stockQuantity, distance, inStock, isNearest } = result;
+
+  const handleReserve = () => {
+    if (onReserve && inStock) {
+      onReserve({
+        shopId: shop.id,
+        medicineId: medicine.id,
+        medicineName: medicine.name,
+        shopName: shop.name,
+        price,
+        availableStock: stockQuantity,
+      });
+    }
+  };
 
   return (
     <div className={`bg-white rounded-lg shadow-md p-6 relative ${!inStock ? 'opacity-75' : ''}`}>
@@ -71,18 +92,30 @@ export default function MedicineResultCard({ result }: MedicineResultCardProps) 
         </div>
       </div>
       
-      <Button 
-        className={`w-full mt-4 py-2 rounded-lg transition-colors ${
-          inStock 
-            ? 'bg-primary text-white hover:bg-blue-700' 
-            : 'bg-gray-400 text-white cursor-not-allowed'
-        }`}
-        disabled={!inStock}
-        data-testid="button-directions"
-      >
-        <Navigation className="w-4 h-4 mr-2" />
-        {inStock ? 'Get Directions' : 'Out of Stock'}
-      </Button>
+      <div className="flex gap-2 mt-4">
+        <Button 
+          variant="outline"
+          className="flex-1"
+          disabled={!inStock}
+          data-testid="button-directions"
+        >
+          <Navigation className="w-4 h-4 mr-2" />
+          Directions
+        </Button>
+        <Button 
+          className={`flex-1 ${
+            inStock 
+              ? 'bg-primary text-white hover:bg-blue-700' 
+              : 'bg-gray-400 text-white cursor-not-allowed'
+          }`}
+          disabled={!inStock}
+          onClick={handleReserve}
+          data-testid="button-reserve"
+        >
+          <Calendar className="w-4 h-4 mr-2" />
+          {inStock ? 'Reserve' : 'Out of Stock'}
+        </Button>
+      </div>
     </div>
   );
 }

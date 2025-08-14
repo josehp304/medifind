@@ -3,14 +3,17 @@ import {
   medicines, 
   inventory, 
   users,
+  reservations,
   type Shop, 
   type Medicine, 
   type Inventory, 
   type User,
+  type Reservation,
   type InsertShop, 
   type InsertMedicine, 
   type InsertInventory,
-  type InsertUser 
+  type InsertUser,
+  type InsertReservation
 } from "@shared/schema";
 import { db } from "./db";
 import { eq, ilike, and, desc } from "drizzle-orm";
@@ -35,6 +38,12 @@ export interface IStorage {
   getInventoryByShopId(shopId: number): Promise<(Inventory & { medicine: Medicine })[]>;
   searchMedicineInventory(medicineName: string): Promise<(Inventory & { shop: Shop; medicine: Medicine })[]>;
   createInventory(inventoryItem: InsertInventory): Promise<Inventory>;
+  
+  // Reservation methods
+  createReservation(reservation: InsertReservation): Promise<Reservation>;
+  getReservationById(id: number): Promise<(Reservation & { shop: Shop; medicine: Medicine }) | undefined>;
+  getAllReservations(): Promise<(Reservation & { shop: Shop; medicine: Medicine })[]>;
+  updateReservationStatus(id: number, status: string): Promise<Reservation>;
 }
 
 export class DatabaseStorage implements IStorage {
@@ -138,6 +147,76 @@ export class DatabaseStorage implements IStorage {
       .values(inventoryItem)
       .returning();
     return newInventory;
+  }
+
+  async createReservation(reservation: InsertReservation): Promise<Reservation> {
+    const [newReservation] = await db
+      .insert(reservations)
+      .values(reservation)
+      .returning();
+    return newReservation;
+  }
+
+  async getReservationById(id: number): Promise<(Reservation & { shop: Shop; medicine: Medicine }) | undefined> {
+    const [result] = await db
+      .select({
+        id: reservations.id,
+        customerName: reservations.customerName,
+        customerPhone: reservations.customerPhone,
+        customerEmail: reservations.customerEmail,
+        shopId: reservations.shopId,
+        medicineId: reservations.medicineId,
+        quantity: reservations.quantity,
+        totalPrice: reservations.totalPrice,
+        status: reservations.status,
+        reservationDate: reservations.reservationDate,
+        pickupDate: reservations.pickupDate,
+        notes: reservations.notes,
+        createdAt: reservations.createdAt,
+        updatedAt: reservations.updatedAt,
+        shop: shops,
+        medicine: medicines,
+      })
+      .from(reservations)
+      .innerJoin(shops, eq(reservations.shopId, shops.id))
+      .innerJoin(medicines, eq(reservations.medicineId, medicines.id))
+      .where(eq(reservations.id, id));
+    return result;
+  }
+
+  async getAllReservations(): Promise<(Reservation & { shop: Shop; medicine: Medicine })[]> {
+    return await db
+      .select({
+        id: reservations.id,
+        customerName: reservations.customerName,
+        customerPhone: reservations.customerPhone,
+        customerEmail: reservations.customerEmail,
+        shopId: reservations.shopId,
+        medicineId: reservations.medicineId,
+        quantity: reservations.quantity,
+        totalPrice: reservations.totalPrice,
+        status: reservations.status,
+        reservationDate: reservations.reservationDate,
+        pickupDate: reservations.pickupDate,
+        notes: reservations.notes,
+        createdAt: reservations.createdAt,
+        updatedAt: reservations.updatedAt,
+        shop: shops,
+        medicine: medicines,
+      })
+      .from(reservations)
+      .innerJoin(shops, eq(reservations.shopId, shops.id))
+      .innerJoin(medicines, eq(reservations.medicineId, medicines.id))
+      .orderBy(desc(reservations.createdAt));
+  }
+
+  async updateReservationStatus(id: number, status: string): Promise<Reservation> {
+    const [updatedReservation] = await db
+      .update(reservations)
+      .set({ status: status as any, updatedAt: new Date() })
+      .where(eq(reservations.id, id))
+      .returning();
+    return updatedReservation;
   }
 }
 

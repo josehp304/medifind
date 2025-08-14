@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import LoadingSpinner from "@/components/ui/loading-spinner";
 import MedicineResultCard from "@/components/medicine-result-card";
+import { ReservationForm } from "@/components/reservation-form";
 
 interface SearchResult {
   shop: {
@@ -30,6 +31,14 @@ interface SearchResult {
 export default function MedicineSearch() {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [reservationData, setReservationData] = useState<{
+    shopId: number;
+    medicineId: number;
+    medicineName: string;
+    shopName: string;
+    price: string;
+    availableStock: number;
+  } | null>(null);
 
   // Debounce search term to avoid too many API calls
   useEffect(() => {
@@ -61,6 +70,21 @@ export default function MedicineSearch() {
     if (e.key === "Enter") {
       handleSearch();
     }
+  };
+
+  const handleReservation = (data: {
+    shopId: number;
+    medicineId: number;
+    medicineName: string;
+    shopName: string;
+    price: string;
+    availableStock: number;
+  }) => {
+    setReservationData(data);
+  };
+
+  const closeReservationForm = () => {
+    setReservationData(null);
   };
 
   // Filter medicines for suggestions
@@ -192,11 +216,26 @@ export default function MedicineSearch() {
               <MedicineResultCard 
                 key={`${result.shop.id}-${result.medicine.id}`}
                 result={result}
+                onReserve={handleReservation}
                 data-testid={`card-result-${index}`}
               />
             ))}
           </div>
         </div>
+      )}
+
+      {/* Reservation Form Modal */}
+      {reservationData && (
+        <ReservationForm
+          shopId={reservationData.shopId}
+          medicineId={reservationData.medicineId}
+          medicineName={reservationData.medicineName}
+          shopName={reservationData.shopName}
+          price={reservationData.price}
+          availableStock={reservationData.availableStock}
+          isOpen={!!reservationData}
+          onClose={closeReservationForm}
+        />
       )}
     </main>
   );

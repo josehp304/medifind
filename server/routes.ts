@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
+import { insertReservationSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Medicine search endpoint
@@ -124,6 +125,135 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         message: "Failed to fetch shop inventory",
         error: "FETCH_INVENTORY_FAILED"
+      });
+    }
+  });
+
+  // Reservation endpoints
+  
+  // Create a new reservation
+  app.post("/api/reservations", async (req, res) => {
+    try {
+      const reservationData = insertReservationSchema.parse(req.body);
+      
+      // Check if the medicine is available at the shop
+      const inventory = await storage.getInventoryByShopId(reservationData.shopId);
+      const medicineInventory = inventory.find(item => item.medicineId === reservationData.medicineId);
+      
+      if (!medicineInventory) {
+        return res.status(404).json({ 
+          message: "Medicine not available at this pharmacy",
+          error: "MEDICINE_NOT_AVAILABLE"
+        });
+      }
+      
+      if (medicineInventory.stockQuantity < (reservationData.quantity || 1)) {
+        return res.status(400).json({ 
+          message: "Insufficient stock available",
+          error: "INSUFFICIENT_STOCK",
+          availableStock: medicineInventory.stockQuantity
+        });
+      }
+
+      const reservation = await storage.createReservation(reservationData);
+      res.status(201).json(reservation);
+    } catch (error) {
+      console.error("Error creating reservation:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid reservation data",
+          error: "VALIDATION_ERROR",
+          details: error.errors
+        });
+      }
+      res.status(500).json({ 
+        message: "Failed to create reservation",
+        error: "RESERVATION_CREATION_FAILED"
+      });
+    }
+  });
+
+  // Get all reservations (for admin/pharmacy view)
+  app.get("/api/reservations", async (req, res) => {
+    try {
+      const reservations = await storage.getAllReservations();
+      res.json(reservations);
+    } catch (error) {
+      console.error("Error fetching reservations:", error);
+      res.status(500).json({ 
+        message: "Failed to fetch reservations",
+        error: "FETCH_RESERVATIONS_FAILED"
+      });
+    }
+  });
+
+  // Get reservation by ID
+  app.get("/api/reservations/:id", async (req, res) => {
+    try {
+      const reservationId = parseInt(req.params.id);
+      
+      if (isNaN(reservationId)) {
+        return res.status(400).json({ 
+          message: "Invalid reservation ID",
+          error: "INVALID_RESERVATION_ID"
+        });
+      }
+
+      const reservation = await storage.getReservationById(reservationId);
+      
+      if (!reservation) {
+        return res.status(404).json({ 
+          message: "Reservation not found",
+          error: "RESERVATION_NOT_FOUND"
+        });
+      }
+
+      res.json(reservation);
+    } catch (error) {
+      console.error("Error fetching reservation:", error);
+      res.status(500).json({ 
+        message: "Failed to fetch reservation",
+        error: "FETCH_RESERVATION_FAILED"
+      });
+    }
+  });
+
+  // Update reservation status
+  app.put("/api/reservations/:id/status", async (req, res) => {
+    try {
+      const reservationId = parseInt(req.params.id);
+      const { status } = req.body;
+      
+      if (isNaN(reservationId)) {
+        return res.status(400).json({ 
+          message: "Invalid reservation ID",
+          error: "INVALID_RESERVATION_ID"
+        });
+      }
+
+      if (!status || typeof status !== 'string') {
+        return res.status(400).json({ 
+          message: "Status is required",
+          error: "MISSING_STATUS"
+        });
+      }
+
+      const validStatuses = ['pending', 'confirmed', 'ready_for_pickup', 'completed', 'cancelled'];
+      if (!validStatuses.includes(status)) {
+        return res.status(400).json({ 
+          message: "Invalid status",
+          error: "INVALID_STATUS",
+          validStatuses
+        });
+      }
+
+      const updatedReservation = await storage.updateReservationStatus(reservationId, status);
+      res.json(updatedReservation);
+    } catch (error) {
+      console.error("Error updating reservation status:", error);
+      res.status(500).json({ 
+        message: "Failed to update reservation status",
+        error: "UPDATE_STATUS_FAILED"
       });
     }
   });
