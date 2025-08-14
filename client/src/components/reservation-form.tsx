@@ -155,9 +155,18 @@ export function ReservationForm({
               </div>
             </div>
 
-            <Button onClick={handleClose} className="w-full" data-testid="button-close-success">
-              Close
-            </Button>
+            <div className="text-center p-4 bg-green-50 rounded-lg border border-green-200">
+              <p className="text-green-800 font-medium">Your item is reserved</p>
+            </div>
+
+            <div className="flex gap-3">
+              <Button onClick={handleClose} variant="outline" className="flex-1" data-testid="button-close-success">
+                Close
+              </Button>
+              <Button className="flex-1 bg-green-600 hover:bg-green-700" data-testid="button-submit-reservation-success">
+                Submit
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
