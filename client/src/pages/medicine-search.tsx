@@ -42,7 +42,7 @@ export default function MedicineSearch() {
 
   // Auto-search as user types (with debouncing)
   const { data: results, isLoading, error } = useQuery<SearchResult[]>({
-    queryKey: ["/api/medicines/search", { name: debouncedSearchTerm }],
+    queryKey: [`/api/medicines/search?name=${encodeURIComponent(debouncedSearchTerm)}`],
     enabled: debouncedSearchTerm.trim().length >= 2, // Search when at least 2 characters
   });
 
