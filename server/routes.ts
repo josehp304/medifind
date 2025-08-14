@@ -46,7 +46,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Mark the nearest shop
       if (resultsWithDistance.length > 0) {
-        resultsWithDistance[0].isNearest = true;
+        (resultsWithDistance[0] as any).isNearest = true;
       }
 
       res.json(resultsWithDistance);

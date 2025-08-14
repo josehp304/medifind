@@ -31,7 +31,7 @@ export default function MedicineSearch() {
   const [searchTerm, setSearchTerm] = useState("");
   const [shouldSearch, setShouldSearch] = useState(false);
 
-  const { data: results, isLoading, error } = useQuery({
+  const { data: results, isLoading, error } = useQuery<SearchResult[]>({
     queryKey: ["/api/medicines/search", { name: searchTerm }],
     enabled: shouldSearch && searchTerm.trim().length > 0,
   });

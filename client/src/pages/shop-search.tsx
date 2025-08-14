@@ -38,11 +38,11 @@ export default function ShopSearch() {
   const [selectedShopId, setSelectedShopId] = useState<string>("");
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { data: shops, isLoading: shopsLoading } = useQuery({
+  const { data: shops, isLoading: shopsLoading } = useQuery<Shop[]>({
     queryKey: ["/api/shops"],
   });
 
-  const { data: shopInventory, isLoading: inventoryLoading } = useQuery({
+  const { data: shopInventory, isLoading: inventoryLoading } = useQuery<ShopInventoryResponse>({
     queryKey: ["/api/shops", selectedShopId, "medicines"],
     enabled: !!selectedShopId,
   });
