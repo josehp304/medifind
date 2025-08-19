@@ -16,7 +16,7 @@ import {
   type InsertReservation
 } from "@shared/schema";
 import { db } from "./db";
-import { eq, ilike, and, desc } from "drizzle-orm";
+import { eq, ilike, and, desc, sql } from "drizzle-orm";
 
 export interface IStorage {
   getUser(id: string): Promise<User | undefined>;
@@ -27,6 +27,7 @@ export interface IStorage {
   getAllShops(): Promise<Shop[]>;
   getShopById(id: number): Promise<Shop | undefined>;
   createShop(shop: InsertShop): Promise<Shop>;
+  updateShop(id: number, shop: Partial<InsertShop>): Promise<Shop | undefined>;
   
   // Medicine methods
   getAllMedicines(): Promise<Medicine[]>;
@@ -38,11 +39,15 @@ export interface IStorage {
   getInventoryByShopId(shopId: number): Promise<(Inventory & { medicine: Medicine })[]>;
   searchMedicineInventory(medicineName: string): Promise<(Inventory & { shop: Shop; medicine: Medicine })[]>;
   createInventory(inventoryItem: InsertInventory): Promise<Inventory>;
+  updateInventoryItem(inventoryId: number, shopId: number, updates: Partial<InsertInventory>): Promise<Inventory | undefined>;
+  deleteInventoryItem(inventoryId: number, shopId: number): Promise<boolean>;
+  getLowStockItems(shopId: number): Promise<(Inventory & { medicine: Medicine })[]>;
   
   // Reservation methods
   createReservation(reservation: InsertReservation): Promise<Reservation>;
   getReservationById(id: number): Promise<(Reservation & { shop: Shop; medicine: Medicine }) | undefined>;
   getAllReservations(): Promise<(Reservation & { shop: Shop; medicine: Medicine })[]>;
+  getReservationsByShopId(shopId: number): Promise<(Reservation & { shop: Shop; medicine: Medicine })[]>;
   updateReservationStatus(id: number, status: string): Promise<Reservation>;
 }
 
@@ -82,6 +87,15 @@ export class DatabaseStorage implements IStorage {
     return newShop;
   }
 
+  async updateShop(id: number, shop: Partial<InsertShop>): Promise<Shop | undefined> {
+    const [updatedShop] = await db
+      .update(shops)
+      .set(shop)
+      .where(eq(shops.id, id))
+      .returning();
+    return updatedShop || undefined;
+  }
+
   async getAllMedicines(): Promise<Medicine[]> {
     return await db.select().from(medicines);
   }
@@ -114,6 +128,13 @@ export class DatabaseStorage implements IStorage {
         medicineId: inventory.medicineId,
         price: inventory.price,
         stockQuantity: inventory.stockQuantity,
+        minStockLevel: inventory.minStockLevel,
+        maxStockLevel: inventory.maxStockLevel,
+        batchNumber: inventory.batchNumber,
+        expiryDate: inventory.expiryDate,
+        supplierName: inventory.supplierName,
+        isActive: inventory.isActive,
+        lastUpdated: inventory.lastUpdated,
         createdAt: inventory.createdAt,
         medicine: medicines,
       })
@@ -130,6 +151,13 @@ export class DatabaseStorage implements IStorage {
         medicineId: inventory.medicineId,
         price: inventory.price,
         stockQuantity: inventory.stockQuantity,
+        minStockLevel: inventory.minStockLevel,
+        maxStockLevel: inventory.maxStockLevel,
+        batchNumber: inventory.batchNumber,
+        expiryDate: inventory.expiryDate,
+        supplierName: inventory.supplierName,
+        isActive: inventory.isActive,
+        lastUpdated: inventory.lastUpdated,
         createdAt: inventory.createdAt,
         shop: shops,
         medicine: medicines,
@@ -147,6 +175,49 @@ export class DatabaseStorage implements IStorage {
       .values(inventoryItem)
       .returning();
     return newInventory;
+  }
+
+  async updateInventoryItem(inventoryId: number, shopId: number, updates: Partial<InsertInventory>): Promise<Inventory | undefined> {
+    const [updatedItem] = await db
+      .update(inventory)
+      .set({ ...updates, lastUpdated: new Date() })
+      .where(and(eq(inventory.id, inventoryId), eq(inventory.shopId, shopId)))
+      .returning();
+    return updatedItem || undefined;
+  }
+
+  async deleteInventoryItem(inventoryId: number, shopId: number): Promise<boolean> {
+    const result = await db
+      .delete(inventory)
+      .where(and(eq(inventory.id, inventoryId), eq(inventory.shopId, shopId)));
+    return (result.rowCount || 0) > 0;
+  }
+
+  async getLowStockItems(shopId: number): Promise<(Inventory & { medicine: Medicine })[]> {
+    return await db
+      .select({
+        id: inventory.id,
+        shopId: inventory.shopId,
+        medicineId: inventory.medicineId,
+        price: inventory.price,
+        stockQuantity: inventory.stockQuantity,
+        minStockLevel: inventory.minStockLevel,
+        maxStockLevel: inventory.maxStockLevel,
+        batchNumber: inventory.batchNumber,
+        expiryDate: inventory.expiryDate,
+        supplierName: inventory.supplierName,
+        isActive: inventory.isActive,
+        lastUpdated: inventory.lastUpdated,
+        createdAt: inventory.createdAt,
+        medicine: medicines,
+      })
+      .from(inventory)
+      .innerJoin(medicines, eq(inventory.medicineId, medicines.id))
+      .where(and(
+        eq(inventory.shopId, shopId),
+        eq(inventory.isActive, 1),
+        sql`${inventory.stockQuantity} <= ${inventory.minStockLevel}`
+      ));
   }
 
   async createReservation(reservation: InsertReservation): Promise<Reservation> {
@@ -207,6 +278,33 @@ export class DatabaseStorage implements IStorage {
       .from(reservations)
       .innerJoin(shops, eq(reservations.shopId, shops.id))
       .innerJoin(medicines, eq(reservations.medicineId, medicines.id))
+      .orderBy(desc(reservations.createdAt));
+  }
+
+  async getReservationsByShopId(shopId: number): Promise<(Reservation & { shop: Shop; medicine: Medicine })[]> {
+    return await db
+      .select({
+        id: reservations.id,
+        customerName: reservations.customerName,
+        customerPhone: reservations.customerPhone,
+        customerEmail: reservations.customerEmail,
+        shopId: reservations.shopId,
+        medicineId: reservations.medicineId,
+        quantity: reservations.quantity,
+        totalPrice: reservations.totalPrice,
+        status: reservations.status,
+        reservationDate: reservations.reservationDate,
+        pickupDate: reservations.pickupDate,
+        notes: reservations.notes,
+        createdAt: reservations.createdAt,
+        updatedAt: reservations.updatedAt,
+        shop: shops,
+        medicine: medicines,
+      })
+      .from(reservations)
+      .innerJoin(shops, eq(reservations.shopId, shops.id))
+      .innerJoin(medicines, eq(reservations.medicineId, medicines.id))
+      .where(eq(reservations.shopId, shopId))
       .orderBy(desc(reservations.createdAt));
   }
 

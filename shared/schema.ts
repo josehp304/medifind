@@ -18,6 +18,11 @@ export const shops = pgTable("shops", {
   address: text("address").notNull(),
   latitude: real("latitude").notNull(),
   longitude: real("longitude").notNull(),
+  ownerName: text("owner_name").notNull(),
+  ownerPhone: text("owner_phone").notNull(),
+  ownerEmail: text("owner_email").notNull(),
+  licenseNumber: text("license_number").notNull(),
+  isActive: integer("is_active").notNull().default(1), // 1 = active, 0 = inactive
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -25,6 +30,11 @@ export const medicines = pgTable("medicines", {
   id: serial("id").primaryKey(),
   name: text("name").notNull(),
   description: text("description").notNull(),
+  manufacturer: text("manufacturer"),
+  category: text("category"), // e.g., "antibiotic", "pain relief", "diabetes", etc.
+  dosageForm: text("dosage_form"), // e.g., "tablet", "capsule", "syrup", etc.
+  strength: text("strength"), // e.g., "500mg", "10ml", etc.
+  requiresPrescription: integer("requires_prescription").notNull().default(0), // 1 = prescription required, 0 = over-the-counter
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -34,6 +44,13 @@ export const inventory = pgTable("inventory", {
   medicineId: integer("medicine_id").notNull().references(() => medicines.id),
   price: numeric("price", { precision: 10, scale: 2 }).notNull(),
   stockQuantity: integer("stock_quantity").notNull().default(0),
+  minStockLevel: integer("min_stock_level").notNull().default(10), // minimum stock alert level
+  maxStockLevel: integer("max_stock_level").notNull().default(100), // maximum stock capacity
+  batchNumber: text("batch_number"),
+  expiryDate: timestamp("expiry_date"),
+  supplierName: text("supplier_name"),
+  isActive: integer("is_active").notNull().default(1), // 1 = active, 0 = discontinued
+  lastUpdated: timestamp("last_updated").defaultNow(),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -99,6 +116,7 @@ export const insertMedicineSchema = createInsertSchema(medicines).omit({
 export const insertInventorySchema = createInsertSchema(inventory).omit({
   id: true,
   createdAt: true,
+  lastUpdated: true,
 });
 
 export const insertReservationSchema = createInsertSchema(reservations).omit({

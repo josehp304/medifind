@@ -2,9 +2,294 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
-import { insertReservationSchema } from "@shared/schema";
+import { insertReservationSchema, insertShopSchema, insertMedicineSchema, insertInventorySchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  
+  // =========================
+  // PHARMACY OWNER ENDPOINTS
+  // =========================
+  
+  // Create a new pharmacy
+  app.post("/api/pharmacies", async (req, res) => {
+    try {
+      const pharmacyData = insertShopSchema.parse(req.body);
+      const newPharmacy = await storage.createShop(pharmacyData);
+      res.status(201).json(newPharmacy);
+    } catch (error) {
+      console.error("Error creating pharmacy:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid pharmacy data",
+          error: "VALIDATION_ERROR",
+          details: error.errors
+        });
+      }
+      res.status(500).json({ 
+        message: "Failed to create pharmacy",
+        error: "PHARMACY_CREATION_FAILED"
+      });
+    }
+  });
+
+  // Get pharmacy details for owner
+  app.get("/api/pharmacies/:id", async (req, res) => {
+    try {
+      const pharmacyId = parseInt(req.params.id);
+      
+      if (isNaN(pharmacyId)) {
+        return res.status(400).json({ 
+          message: "Invalid pharmacy ID",
+          error: "INVALID_PHARMACY_ID"
+        });
+      }
+
+      const pharmacy = await storage.getShopById(pharmacyId);
+      if (!pharmacy) {
+        return res.status(404).json({ 
+          message: "Pharmacy not found",
+          error: "PHARMACY_NOT_FOUND"
+        });
+      }
+
+      res.json(pharmacy);
+    } catch (error) {
+      console.error("Error fetching pharmacy:", error);
+      res.status(500).json({ 
+        message: "Failed to fetch pharmacy",
+        error: "FETCH_PHARMACY_FAILED"
+      });
+    }
+  });
+
+  // Update pharmacy details
+  app.put("/api/pharmacies/:id", async (req, res) => {
+    try {
+      const pharmacyId = parseInt(req.params.id);
+      
+      if (isNaN(pharmacyId)) {
+        return res.status(400).json({ 
+          message: "Invalid pharmacy ID",
+          error: "INVALID_PHARMACY_ID"
+        });
+      }
+
+      const updateData = insertShopSchema.partial().parse(req.body);
+      const updatedPharmacy = await storage.updateShop(pharmacyId, updateData);
+      
+      if (!updatedPharmacy) {
+        return res.status(404).json({ 
+          message: "Pharmacy not found",
+          error: "PHARMACY_NOT_FOUND"
+        });
+      }
+
+      res.json(updatedPharmacy);
+    } catch (error) {
+      console.error("Error updating pharmacy:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid pharmacy data",
+          error: "VALIDATION_ERROR",
+          details: error.errors
+        });
+      }
+      res.status(500).json({ 
+        message: "Failed to update pharmacy",
+        error: "PHARMACY_UPDATE_FAILED"
+      });
+    }
+  });
+
+  // Create a new medicine (for the medicine catalog)
+  app.post("/api/medicines", async (req, res) => {
+    try {
+      const medicineData = insertMedicineSchema.parse(req.body);
+      const newMedicine = await storage.createMedicine(medicineData);
+      res.status(201).json(newMedicine);
+    } catch (error) {
+      console.error("Error creating medicine:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid medicine data",
+          error: "VALIDATION_ERROR",
+          details: error.errors
+        });
+      }
+      res.status(500).json({ 
+        message: "Failed to create medicine",
+        error: "MEDICINE_CREATION_FAILED"
+      });
+    }
+  });
+
+  // Add medicine to pharmacy inventory
+  app.post("/api/pharmacies/:id/inventory", async (req, res) => {
+    try {
+      const pharmacyId = parseInt(req.params.id);
+      
+      if (isNaN(pharmacyId)) {
+        return res.status(400).json({ 
+          message: "Invalid pharmacy ID",
+          error: "INVALID_PHARMACY_ID"
+        });
+      }
+
+      // Process the request body and handle date conversion
+      const requestBody = {
+        ...req.body,
+        shopId: pharmacyId,
+        expiryDate: req.body.expiryDate ? new Date(req.body.expiryDate) : null
+      };
+
+      const inventoryData = insertInventorySchema.parse(requestBody);
+
+      const newInventoryItem = await storage.createInventory(inventoryData);
+      res.status(201).json(newInventoryItem);
+    } catch (error) {
+      console.error("Error adding medicine to inventory:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid inventory data",
+          error: "VALIDATION_ERROR",
+          details: error.errors
+        });
+      }
+      res.status(500).json({ 
+        message: "Failed to add medicine to inventory",
+        error: "INVENTORY_CREATION_FAILED"
+      });
+    }
+  });
+
+  // Update inventory item (stock, price, etc.)
+  app.put("/api/pharmacies/:pharmacyId/inventory/:inventoryId", async (req, res) => {
+    try {
+      const pharmacyId = parseInt(req.params.pharmacyId);
+      const inventoryId = parseInt(req.params.inventoryId);
+      
+      if (isNaN(pharmacyId) || isNaN(inventoryId)) {
+        return res.status(400).json({ 
+          message: "Invalid pharmacy or inventory ID",
+          error: "INVALID_IDS"
+        });
+      }
+
+      // Process the request body and handle date conversion
+      const requestBody = {
+        ...req.body,
+        expiryDate: req.body.expiryDate ? new Date(req.body.expiryDate) : undefined
+      };
+
+      const updateData = insertInventorySchema.partial().parse(requestBody);
+      const updatedItem = await storage.updateInventoryItem(inventoryId, pharmacyId, updateData);
+      
+      if (!updatedItem) {
+        return res.status(404).json({ 
+          message: "Inventory item not found",
+          error: "INVENTORY_NOT_FOUND"
+        });
+      }
+
+      res.json(updatedItem);
+    } catch (error) {
+      console.error("Error updating inventory:", error);
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ 
+          message: "Invalid inventory data",
+          error: "VALIDATION_ERROR",
+          details: error.errors
+        });
+      }
+      res.status(500).json({ 
+        message: "Failed to update inventory",
+        error: "INVENTORY_UPDATE_FAILED"
+      });
+    }
+  });
+
+  // Delete inventory item
+  app.delete("/api/pharmacies/:pharmacyId/inventory/:inventoryId", async (req, res) => {
+    try {
+      const pharmacyId = parseInt(req.params.pharmacyId);
+      const inventoryId = parseInt(req.params.inventoryId);
+      
+      if (isNaN(pharmacyId) || isNaN(inventoryId)) {
+        return res.status(400).json({ 
+          message: "Invalid pharmacy or inventory ID",
+          error: "INVALID_IDS"
+        });
+      }
+
+      const deleted = await storage.deleteInventoryItem(inventoryId, pharmacyId);
+      
+      if (!deleted) {
+        return res.status(404).json({ 
+          message: "Inventory item not found",
+          error: "INVENTORY_NOT_FOUND"
+        });
+      }
+
+      res.status(200).json({ message: "Inventory item deleted successfully" });
+    } catch (error) {
+      console.error("Error deleting inventory item:", error);
+      res.status(500).json({ 
+        message: "Failed to delete inventory item",
+        error: "INVENTORY_DELETE_FAILED"
+      });
+    }
+  });
+
+  // Get pharmacy's reservations
+  app.get("/api/pharmacies/:id/reservations", async (req, res) => {
+    try {
+      const pharmacyId = parseInt(req.params.id);
+      
+      if (isNaN(pharmacyId)) {
+        return res.status(400).json({ 
+          message: "Invalid pharmacy ID",
+          error: "INVALID_PHARMACY_ID"
+        });
+      }
+
+      const reservations = await storage.getReservationsByShopId(pharmacyId);
+      res.json(reservations);
+    } catch (error) {
+      console.error("Error fetching pharmacy reservations:", error);
+      res.status(500).json({ 
+        message: "Failed to fetch pharmacy reservations",
+        error: "FETCH_RESERVATIONS_FAILED"
+      });
+    }
+  });
+
+  // Get low stock items for a pharmacy
+  app.get("/api/pharmacies/:id/low-stock", async (req, res) => {
+    try {
+      const pharmacyId = parseInt(req.params.id);
+      
+      if (isNaN(pharmacyId)) {
+        return res.status(400).json({ 
+          message: "Invalid pharmacy ID",
+          error: "INVALID_PHARMACY_ID"
+        });
+      }
+
+      const lowStockItems = await storage.getLowStockItems(pharmacyId);
+      res.json(lowStockItems);
+    } catch (error) {
+      console.error("Error fetching low stock items:", error);
+      res.status(500).json({ 
+        message: "Failed to fetch low stock items",
+        error: "FETCH_LOW_STOCK_FAILED"
+      });
+    }
+  });
+
+  // =========================
+  // CUSTOMER/PUBLIC ENDPOINTS (existing endpoints)
+  // =========================
+
   // Medicine search endpoint
   app.get("/api/medicines/search", async (req, res) => {
     try {

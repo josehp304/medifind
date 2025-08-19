@@ -1,3 +1,6 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import { storage } from "./storage";
 import { db } from "./db";
 
@@ -11,31 +14,51 @@ async function seedDatabase() {
         name: "MedPlus Pharmacy",
         address: "123 Main Street, Andheri West, Mumbai",
         latitude: 19.1136,
-        longitude: 72.8697
+        longitude: 72.8697,
+        ownerName: "Dr. Rajesh Sharma",
+        ownerPhone: "+91 9876543210",
+        ownerEmail: "rajesh.sharma@medplus.com",
+        licenseNumber: "PH-MH-2024-001"
       },
       {
         name: "Apollo Pharmacy",
         address: "456 Oak Avenue, Bandra East, Mumbai", 
         latitude: 19.0596,
-        longitude: 72.8295
+        longitude: 72.8295,
+        ownerName: "Dr. Priya Patel",
+        ownerPhone: "+91 9876543211",
+        ownerEmail: "priya.patel@apollo.com",
+        licenseNumber: "PH-MH-2024-002"
       },
       {
         name: "HealthPlus Pharmacy",
         address: "789 Elm Street, Powai, Mumbai",
         latitude: 19.1197,
-        longitude: 72.9065
+        longitude: 72.9065,
+        ownerName: "Dr. Amit Kumar",
+        ownerPhone: "+91 9876543212",
+        ownerEmail: "amit.kumar@healthplus.com",
+        licenseNumber: "PH-MH-2024-003"
       },
       {
         name: "CareFirst Pharmacy",
         address: "321 Pine Road, Colaba, Mumbai",
         latitude: 18.9067,
-        longitude: 72.8147
+        longitude: 72.8147,
+        ownerName: "Dr. Sunita Joshi",
+        ownerPhone: "+91 9876543213",
+        ownerEmail: "sunita.joshi@carefirst.com",
+        licenseNumber: "PH-MH-2024-004"
       },
       {
         name: "WellMed Pharmacy",
         address: "654 Cedar Lane, Thane West, Mumbai",
         latitude: 19.2183,
-        longitude: 72.9781
+        longitude: 72.9781,
+        ownerName: "Dr. Vikram Singh",
+        ownerPhone: "+91 9876543214",
+        ownerEmail: "vikram.singh@wellmed.com",
+        licenseNumber: "PH-MH-2024-005"
       }
     ];
 
@@ -50,39 +73,84 @@ async function seedDatabase() {
     const medicineData = [
       {
         name: "Paracetamol 500mg",
-        description: "Pain relief and fever reducer"
+        description: "Pain relief and fever reducer",
+        manufacturer: "GSK Pharmaceuticals",
+        category: "pain-relief",
+        dosageForm: "tablet",
+        strength: "500mg",
+        requiresPrescription: 0
       },
       {
         name: "Aspirin 325mg",
-        description: "Anti-inflammatory pain reliever"
+        description: "Anti-inflammatory pain reliever",
+        manufacturer: "Bayer Healthcare",
+        category: "pain-relief",
+        dosageForm: "tablet",
+        strength: "325mg",
+        requiresPrescription: 0
       },
       {
         name: "Ibuprofen 400mg",
-        description: "NSAID for pain and inflammation"
+        description: "NSAID for pain and inflammation",
+        manufacturer: "Cipla Limited",
+        category: "pain-relief",
+        dosageForm: "tablet",
+        strength: "400mg",
+        requiresPrescription: 0
       },
       {
         name: "Cetirizine 10mg",
-        description: "Antihistamine for allergies"
+        description: "Antihistamine for allergies",
+        manufacturer: "Dr. Reddy's",
+        category: "antihistamine",
+        dosageForm: "tablet",
+        strength: "10mg",
+        requiresPrescription: 0
       },
       {
         name: "Omeprazole 20mg",
-        description: "Proton pump inhibitor for acid reflux"
+        description: "Proton pump inhibitor for acid reflux",
+        manufacturer: "Lupin Pharmaceuticals",
+        category: "gastric",
+        dosageForm: "capsule",
+        strength: "20mg",
+        requiresPrescription: 1
       },
       {
         name: "Amoxicillin 250mg",
-        description: "Antibiotic for bacterial infections"
+        description: "Antibiotic for bacterial infections",
+        manufacturer: "Aurobindo Pharma",
+        category: "antibiotic",
+        dosageForm: "capsule",
+        strength: "250mg",
+        requiresPrescription: 1
       },
       {
         name: "Metformin 500mg",
-        description: "Diabetes medication"
+        description: "Diabetes medication",
+        manufacturer: "Sun Pharmaceutical",
+        category: "diabetes",
+        dosageForm: "tablet",
+        strength: "500mg",
+        requiresPrescription: 1
       },
       {
         name: "Lisinopril 10mg",
-        description: "ACE inhibitor for blood pressure"
+        description: "ACE inhibitor for blood pressure",
+        manufacturer: "Torrent Pharmaceuticals",
+        category: "cardiovascular",
+        dosageForm: "tablet",
+        strength: "10mg",
+        requiresPrescription: 1
       },
       {
         name: "Simvastatin 20mg",
-        description: "Statin for cholesterol management"
+        description: "Statin for cholesterol management",
+        manufacturer: "Ranbaxy Laboratories",
+        category: "cardiovascular",
+        dosageForm: "tablet",
+        strength: "20mg",
+        requiresPrescription: 1
       },
       {
         name: "Loratadine 10mg",

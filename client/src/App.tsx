@@ -7,6 +7,7 @@ import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import MedicineSearch from "@/pages/medicine-search";
 import ShopSearch from "@/pages/shop-search";
+import { PharmacyManagement } from "@/pages/pharmacy-management";
 import Header from "@/components/layout/header";
 import Footer from "@/components/layout/footer";
 
@@ -18,6 +19,7 @@ function Router() {
         <Route path="/" component={Home} />
         <Route path="/medicine-search" component={MedicineSearch} />
         <Route path="/shop-search" component={ShopSearch} />
+        <Route path="/pharmacy-management" component={PharmacyManagement} />
         <Route component={NotFound} />
       </Switch>
       <Footer />

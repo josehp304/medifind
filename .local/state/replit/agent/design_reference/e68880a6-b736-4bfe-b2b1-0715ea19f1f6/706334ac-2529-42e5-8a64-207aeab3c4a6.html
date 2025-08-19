@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MediFind - Locate Medicines in Nearby Pharmacies</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#1976D2',
+                        secondary: '#388E3C',
+                        accent: '#F57C00',
+                        surface: '#FAFAFA'
+                    },
+                    fontFamily: {
+                        'inter': ['Inter', 'system-ui', 'sans-serif']
+                    }
+                }
+            }
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+</head>
+<body class="font-inter bg-surface min-h-screen">
+    <!-- @COMPONENT: Navigation Header -->
+    <header class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-2xl font-bold text-primary">
+                            <i class="fas fa-pills mr-2"></i>MediFind
+                        </h1>
+                    </div>
+                </div>
+                <nav class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-4">
+                        <a href="#" class="text-gray-900 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">Home</a>
+                        <a href="#" class="text-gray-500 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">About</a>
+                        <a href="#" class="text-gray-500 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">Contact</a>
+                    </div>
+                </nav>
+                <button class="md:hidden" id="mobile-menu-button">
+                    <i class="fas fa-bars text-gray-500"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+    <!-- @END_COMPONENT: Navigation Header -->
+
+    <!-- @COMPONENT: Main Content Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- @COMPONENT: Homepage Section -->
+        <section id="homepage" class="text-center mb-12">
+            <div class="max-w-3xl mx-auto">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Find Medicines Near You</h2>
+                <p class="text-xl text-gray-600 mb-8">Quickly locate medicines in nearby pharmacies with real-time availability and pricing</p>
+                
+                <!-- Search Mode Selector -->
+                <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Choose Your Search Method</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        
+                        <!-- Medicine-first Search Card -->
+                        <div class="border-2 border-gray-200 rounded-lg p-6 hover:border-primary transition-colors cursor-pointer" id="medicine-first-card" data-event="click:selectMedicineFirst">
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-primary bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-capsules text-2xl text-primary"></i>
+                                </div>
+                                <h4 class="text-lg font-semibold text-gray-900 mb-2">Search by Medicine</h4>
+                                <p class="text-gray-600 text-sm">Enter a medicine name to find nearby pharmacies that have it in stock</p>
+                            </div>
+                        </div>
+
+                        <!-- Shop-first Search Card -->
+                        <div class="border-2 border-gray-200 rounded-lg p-6 hover:border-primary transition-colors cursor-pointer" id="shop-first-card" data-event="click:selectShopFirst">
+                            <div class="text-center">
+                                <div class="w-16 h-16 bg-secondary bg-opacity-10 rounded-full flex items-center justify-center mx-auto mb-4">
+                                    <i class="fas fa-store text-2xl text-secondary"></i>
+                                </div>
+                                <h4 class="text-lg font-semibold text-gray-900 mb-2">Search by Pharmacy</h4>
+                                <p class="text-gray-600 text-sm">Select a pharmacy to browse their medicine inventory and availability</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- @END_COMPONENT: Homepage Section -->
+
+        <!-- @COMPONENT: Medicine-first Search Section -->
+        <section id="medicine-search" class="hidden">
+            <div class="mb-6">
+                <button class="flex items-center text-primary hover:text-blue-700 mb-4" id="back-to-home">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Search Options
+                </button>
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Search by Medicine</h2>
+                <p class="text-gray-600">Find pharmacies that have your medicine in stock</p>
+            </div>
+
+            <!-- Medicine Search Form -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                <div class="flex gap-4">
+                    <div class="flex-1">
+                        <label for="medicine-input" class="block text-sm font-medium text-gray-700 mb-2">Medicine Name</label>
+                        <input 
+                            type="text" 
+                            id="medicine-input" 
+                            placeholder="Enter medicine name (e.g., Paracetamol, Aspirin)" 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                            data-implementation="Should trigger search on enter key and debounced typing"
+                        >
+                    </div>
+                    <div class="flex items-end">
+                        <button 
+                            class="bg-primary text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+                            data-event="click:searchMedicine"
+                        >
+                            <i class="fas fa-search mr-2"></i>Search
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div id="medicine-loading" class="hidden text-center py-8">
+                <div class="inline-flex items-center px-4 py-2 font-semibold leading-6 text-sm shadow rounded-md text-primary bg-white transition ease-in-out duration-150">
+                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Searching pharmacies...
+                </div>
+            </div>
+
+            <!-- Medicine Search Results -->
+            <div id="medicine-results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- @MAP: searchResults.map(result => ( -->
+                
+                <!-- Result Card 1 - Nearest Shop -->
+                <div class="bg-white rounded-lg shadow-md p-6 relative" data-mock="true">
+                    <div class="absolute top-4 right-4">
+                        <span class="bg-secondary text-white text-xs font-medium px-2 py-1 rounded-full">
+                            <i class="fas fa-map-marker-alt mr-1"></i>Nearest
+                        </span>
+                    </div>
+                    <div class="mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900" data-bind="shop.name">MedPlus Pharmacy</h3>
+                        <p class="text-gray-600 text-sm" data-bind="shop.address">123 Main Street, Downtown</p>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700 font-medium">Price:</span>
+                            <span class="text-lg font-bold text-gray-900" data-bind="inventory.price">₹45.50</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700 font-medium">Stock:</span>
+                            <span class="text-secondary font-medium" data-bind="inventory.stock">25 units</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700 font-medium">Distance:</span>
+                            <span class="text-gray-900 font-medium" data-bind="calculated.distance">0.8 km</span>
+                        </div>
+                    </div>
+                    <button class="w-full mt-4 bg-primary text-white py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-directions mr-2"></i>Get Directions
+                    </button>
+                </div>
+
+                <!-- Result Card 2 -->
+                <div class="bg-white rounded-lg shadow-md p-6" data-mock="true">
+                    <div class="mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900" data-bind="shop.name">Apollo Pharmacy</h3>
+                        <p class="text-gray-600 text-sm" data-bind="shop.address">456 Oak Avenue, City Center</p>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700 font-medium">Price:</span>
+                            <span class="text-lg font-bold text-gray-900" data-bind="inventory.price">₹42.00</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700 font-medium">Stock:</span>
+                            <span class="text-secondary font-medium" data-bind="inventory.stock">12 units</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700 font-medium">Distance:</span>
+                            <span class="text-gray-900 font-medium" data-bind="calculated.distance">1.2 km</span>
+                        </div>
+                    </div>
+                    <button class="w-full mt-4 bg-primary text-white py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-directions mr-2"></i>Get Directions
+                    </button>
+                </div>
+
+                <!-- Result Card 3 - Out of Stock -->
+                <div class="bg-white rounded-lg shadow-md p-6 opacity-75" data-mock="true">
+                    <div class="mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900" data-bind="shop.name">HealthPlus Pharmacy</h3>
+                        <p class="text-gray-600 text-sm" data-bind="shop.address">789 Elm Street, Suburb</p>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700 font-medium">Price:</span>
+                            <span class="text-lg font-bold text-gray-900" data-bind="inventory.price">₹48.00</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700 font-medium">Stock:</span>
+                            <span class="text-red-600 font-medium" data-bind="inventory.stock">Out of Stock</span>
+                        </div>
+                        <div class="flex justify-between items-center">
+                            <span class="text-gray-700 font-medium">Distance:</span>
+                            <span class="text-gray-900 font-medium" data-bind="calculated.distance">2.1 km</span>
+                        </div>
+                    </div>
+                    <button class="w-full mt-4 bg-gray-400 text-white py-2 rounded-lg cursor-not-allowed" disabled>
+                        <i class="fas fa-ban mr-2"></i>Out of Stock
+                    </button>
+                </div>
+
+                <!-- @END_MAP )) -->
+            </div>
+        </section>
+        <!-- @END_COMPONENT: Medicine-first Search Section -->
+
+        <!-- @COMPONENT: Shop-first Search Section -->
+        <section id="shop-search" class="hidden">
+            <div class="mb-6">
+                <button class="flex items-center text-primary hover:text-blue-700 mb-4" id="back-to-home-2">
+                    <i class="fas fa-arrow-left mr-2"></i>Back to Search Options
+                </button>
+                <h2 class="text-3xl font-bold text-gray-900 mb-2">Search by Pharmacy</h2>
+                <p class="text-gray-600">Browse medicine inventory at your selected pharmacy</p>
+            </div>
+
+            <!-- Shop Selection Form -->
+            <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="shop-select" class="block text-sm font-medium text-gray-700 mb-2">Select Pharmacy</label>
+                        <select 
+                            id="shop-select" 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                            data-implementation="Populate from GET /api/shops endpoint"
+                            data-event="change:loadShopInventory"
+                        >
+                            <option value="">Choose a pharmacy...</option>
+                            <option value="1" data-mock="true">MedPlus Pharmacy - 123 Main Street</option>
+                            <option value="2" data-mock="true">Apollo Pharmacy - 456 Oak Avenue</option>
+                            <option value="3" data-mock="true">HealthPlus Pharmacy - 789 Elm Street</option>
+                            <option value="4" data-mock="true">CareFirst Pharmacy - 321 Pine Road</option>
+                            <option value="5" data-mock="true">WellMed Pharmacy - 654 Cedar Lane</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="shop-medicine-input" class="block text-sm font-medium text-gray-700 mb-2">Search Medicine in Shop</label>
+                        <input 
+                            type="text" 
+                            id="shop-medicine-input" 
+                            placeholder="Search medicines in selected pharmacy..." 
+                            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent transition-all"
+                            data-implementation="Filter shop inventory based on medicine name"
+                            disabled
+                        >
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shop Inventory Results -->
+            <div id="shop-inventory" class="bg-white rounded-lg shadow-md overflow-hidden">
+                <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+                    <h3 class="text-lg font-semibold text-gray-900">Medicine Inventory</h3>
+                    <p class="text-gray-600 text-sm mt-1">Select a pharmacy above to view available medicines</p>
+                </div>
+                
+                <!-- Inventory Table -->
+                <div class="overflow-x-auto">
+                    <table class="w-full">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Medicine Name</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Description</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Stock</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200" data-mock="true">
+                            <!-- @MAP: shopInventory.map(item => ( -->
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-gray-900" data-bind="medicine.name">Paracetamol 500mg</div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm text-gray-500" data-bind="medicine.description">Pain relief and fever reducer</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-semibold text-gray-900" data-bind="inventory.price">₹45.50</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900" data-bind="inventory.stock">25 units</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        In Stock
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-gray-900" data-bind="medicine.name">Aspirin 325mg</div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm text-gray-500" data-bind="medicine.description">Anti-inflammatory pain reliever</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-semibold text-gray-900" data-bind="inventory.price">₹32.00</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900" data-bind="inventory.stock">18 units</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        In Stock
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-gray-900" data-bind="medicine.name">Ibuprofen 400mg</div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm text-gray-500" data-bind="medicine.description">NSAID for pain and inflammation</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-semibold text-gray-900" data-bind="inventory.price">₹58.75</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900" data-bind="inventory.stock">0 units</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
+                                        Out of Stock
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-gray-900" data-bind="medicine.name">Cetirizine 10mg</div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm text-gray-500" data-bind="medicine.description">Antihistamine for allergies</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-semibold text-gray-900" data-bind="inventory.price">₹23.25</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900" data-bind="inventory.stock">42 units</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        In Stock
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-medium text-gray-900" data-bind="medicine.name">Omeprazole 20mg</div>
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="text-sm text-gray-500" data-bind="medicine.description">Proton pump inhibitor for acid reflux</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm font-semibold text-gray-900" data-bind="inventory.price">₹89.50</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900" data-bind="inventory.stock">7 units</div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                        Low Stock
+                                    </span>
+                                </td>
+                            </tr>
+                            <!-- @END_MAP )) -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+        <!-- @END_COMPONENT: Shop-first Search Section -->
+
+    </main>
+    <!-- @END_COMPONENT: Main Content Container -->
+
+    <!-- @COMPONENT: Footer -->
+    <footer class="bg-white border-t border-gray-200 mt-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">MediFind</h3>
+                    <p class="text-gray-600 text-sm">Making medicine discovery simple and accessible for everyone.</p>
+                </div>
+                <div>
+                    <h4 class="text-sm font-semibold text-gray-900 mb-4 uppercase tracking-wider">Quick Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-600 hover:text-primary text-sm transition-colors">About Us</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-primary text-sm transition-colors">Privacy Policy</a></li>
+                        <li><a href="#" class="text-gray-600 hover:text-primary text-sm transition-colors">Terms of Service</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-sm font-semibold text-gray-900 mb-4 uppercase tracking-wider">Contact</h4>
+                    <p class="text-gray-600 text-sm mb-2">
+                        <i class="fas fa-envelope mr-2"></i>support@medifind.com
+                    </p>
+                    <p class="text-gray-600 text-sm">
+                        <i class="fas fa-phone mr-2"></i>+1 (555) 123-4567
+                    </p>
+                </div>
+            </div>
+            <div class="border-t border-gray-200 mt-8 pt-8 text-center">
+                <p class="text-gray-500 text-sm">&copy; 2024 MediFind. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+    <!-- @END_COMPONENT: Footer -->
+
+    <script>
+        // TODO: Implement business logic, API calls, and state management
+        (function() {
+            // Navigation state management
+            const sections = {
+                homepage: document.getElementById('homepage'),
+                medicineSearch: document.getElementById('medicine-search'),
+                shopSearch: document.getElementById('shop-search')
+            };
+
+            const medicineResults = document.getElementById('medicine-results');
+            const medicineLoading = document.getElementById('medicine-loading');
+            const shopMedicineInput = document.getElementById('shop-medicine-input');
+
+            // Show specific section
+            function showSection(sectionName) {
+                Object.values(sections).forEach(section => {
+                    if (section) section.classList.add('hidden');
+                });
+                if (sections[sectionName]) {
+                    sections[sectionName].classList.remove('hidden');
+                }
+            }
+
+            // Medicine-first search mode selection
+            document.getElementById('medicine-first-card').addEventListener('click', function() {
+                showSection('medicineSearch');
+                document.getElementById('medicine-input').focus();
+            });
+
+            // Shop-first search mode selection
+            document.getElementById('shop-first-card').addEventListener('click', function() {
+                showSection('shopSearch');
+            });
+
+            // Back to home buttons
+            document.getElementById('back-to-home').addEventListener('click', function() {
+                showSection('homepage');
+            });
+            document.getElementById('back-to-home-2').addEventListener('click', function() {
+                showSection('homepage');
+            });
+
+            // Medicine search functionality
+            document.querySelector('[data-event="click:searchMedicine"]').addEventListener('click', function() {
+                const medicineInput = document.getElementById('medicine-input');
+                const searchTerm = medicineInput.value.trim();
+                
+                if (!searchTerm) {
+                    alert('Please enter a medicine name');
+                    return;
+                }
+
+                // Show loading state
+                medicineLoading.classList.remove('hidden');
+                medicineResults.classList.add('hidden');
+
+                // Simulate API call delay
+                setTimeout(() => {
+                    medicineLoading.classList.add('hidden');
+                    medicineResults.classList.remove('hidden');
+                    // TODO: Replace with actual API call to /api/medicines/search?name=${searchTerm}
+                }, 1500);
+            });
+
+            // Shop selection and inventory loading
+            document.getElementById('shop-select').addEventListener('change', function() {
+                const selectedShop = this.value;
+                if (selectedShop) {
+                    shopMedicineInput.disabled = false;
+                    shopMedicineInput.placeholder = 'Search medicines in this pharmacy...';
+                    // TODO: Load shop inventory via API call to /api/shops/${selectedShop}/medicines
+                } else {
+                    shopMedicineInput.disabled = true;
+                    shopMedicineInput.placeholder = 'Search medicines in selected pharmacy...';
+                    shopMedicineInput.value = '';
+                }
+            });
+
+            // Medicine search within shop inventory
+            shopMedicineInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const inventoryRows = document.querySelectorAll('#shop-inventory tbody tr');
+                
+                inventoryRows.forEach(row => {
+                    const medicineName = row.querySelector('td:first-child .text-gray-900').textContent.toLowerCase();
+                    const description = row.querySelector('td:nth-child(2) .text-gray-500').textContent.toLowerCase();
+                    
+                    if (medicineName.includes(searchTerm) || description.includes(searchTerm)) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+            });
+
+            // Mobile menu toggle
+            document.getElementById('mobile-menu-button').addEventListener('click', function() {
+                // TODO: Implement mobile menu toggle functionality
+            });
+
+            // Search on Enter key
+            document.getElementById('medicine-input').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    document.querySelector('[data-event="click:searchMedicine"]').click();
+                }
+            });
+
+            // Initialize homepage view
+            showSection('homepage');
+        })();
+    </script>
+</body>
+</html>

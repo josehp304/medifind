@@ -1,5 +1,5 @@
 import { Link } from "wouter";
-import { Pill, Menu } from "lucide-react";
+import { Pill, Menu, Store } from "lucide-react";
 import { useState } from "react";
 
 export default function Header() {
@@ -26,6 +26,12 @@ export default function Header() {
                   Home
                 </span>
               </Link>
+              <Link href="/pharmacy-management" data-testid="link-nav-pharmacy">
+                <span className="text-gray-500 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors cursor-pointer flex items-center gap-1">
+                  <Store className="w-4 h-4" />
+                  For Pharmacies
+                </span>
+              </Link>
               <a href="#" className="text-gray-500 hover:text-primary px-3 py-2 rounded-md text-sm font-medium transition-colors">
                 About
               </a>
@@ -50,6 +56,12 @@ export default function Header() {
               <Link href="/" data-testid="link-mobile-home">
                 <span className="text-gray-900 hover:text-primary block px-3 py-2 rounded-md text-base font-medium cursor-pointer">
                   Home
+                </span>
+              </Link>
+              <Link href="/pharmacy-management" data-testid="link-mobile-pharmacy">
+                <span className="text-gray-500 hover:text-primary block px-3 py-2 rounded-md text-base font-medium cursor-pointer flex items-center gap-2">
+                  <Store className="w-4 h-4" />
+                  For Pharmacies
                 </span>
               </Link>
               <a href="#" className="text-gray-500 hover:text-primary block px-3 py-2 rounded-md text-base font-medium">
